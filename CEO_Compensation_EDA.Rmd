@@ -23,7 +23,7 @@ output:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Clear working environment
-rm(list=ls(all=TRUE)) 
+#m(list=ls(all=TRUE)) 
 # The tidyverse package contains ggplot2, tibble, tidyr, readr, purr, and dplyr among others
 library(tidyverse)
 # The gridExtra package contains grid.arrange function used to combine plots
