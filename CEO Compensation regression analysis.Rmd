@@ -1,0 +1,570 @@
+---
+title: "CEO Compensation regression analysis"
+author: "Afsar Ali"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 3
+---
+
+## Code header 
+
+```{r}
+# Course: BUAN 5210
+# Title: Final Project EDA
+# Purpose: CEO Compensation regression analysis
+# Date: Dec 1st, 2017
+# Author: Afsar Ali
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Clear working environment
+rm(list=ls(all=TRUE)) 
+
+# The tidyverse package contains ggplot2, tibble, tidyr, readr, purr, and dplyr among others
+library(tidyverse)
+# The gridExtra package contains grid.arrange function used to combine plots
+library(gridExtra)
+# The GGally package contains ggpairs which is a custom correlation graph for ggplot2
+library(GGally)
+# Load gridExtra so can plot more than one graph with grid.arrange
+library(gridExtra)
+#load other packages
+library(plotly)
+library(psych)
+library(knitr)
+library(htmlTable)
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+#Load and Review data
+dat <- read.csv("ECON5100_project_data.csv", header = TRUE)
+#datd <- read.csv("ECON5100_project_data_definition.csv", header = TRUE) 
+dat <- mutate(dat, DRatio = (DLTT/AT)) #Calculating long term debt ratio
+
+#Make a subset of relevent data
+dat1 <- select(dat, "AT","NI", "CH", "DLTT", "PRCH_C", "PRCL_C", "DRatio", "TDC2", "SALARY", "BONUS", "OTHCOMP", "AGE", "GENDER")
+dat1<-  mutate (dat1, ageg = cut(AGE, 6)) #grouping age by 6
+datm <- dat1 %>%  filter(GENDER =="MALE") #nale only 
+datf <- dat1 %>%  filter(GENDER =="FEMALE") #female only
+
+#attach the file for use
+attach(dat1)
+
+glimpse(dat)
+summary(dat)
+```
+
+## Histogram of AGE
+
+Mostly middle aged  
+
+```{r message=FALSE, warning=FALSE}
+plot_ly(x = ageg,
+             type = "histogram")
+
+plot_ly(x = ageg,
+             type = "histogram",
+             histnorm = "probability")
+```
+
+## Histrogram of Gender
+
+lot of Males (93% is Male)
+Mostly Middle aged Men
+
+```{r message=FALSE, warning=FALSE}
+plot_ly(x = GENDER,
+             type = "histogram")
+
+plot_ly(x = GENDER,
+             type = "histogram",
+             histnorm = "probability")
+```
+
+## Histogram of other Variables 
+
+Nothing Significant From these Histogram
+
+```{r message=FALSE, warning=FALSE}
+plot_ly(x = CH,
+             type = "histogram") #Total Cash
+plot_ly(x = AT,
+             type = "histogram") #Assets - Total
+plot_ly(x = NI,
+             type = "histogram") #Net Income (Loss)
+plot_ly(x = DLTT,
+             type = "histogram") #Long-Term Debt - Total
+plot_ly(x = PRCH_C,
+             type = "histogram") #Price High - Annual - Calendar
+plot_ly(x = PRCL_C,
+             type = "histogram") #Price Low - Annual - Calendar
+plot_ly(x = DRatio,
+             type = "histogram") #Debt Ratio
+plot_ly(x = SALARY,
+             type = "histogram") #Salary
+plot_ly(x = BONUS,
+             type = "histogram") #The dollar value of a bonus earned by the named executive officer during the fiscal year.
+plot_ly(x = OTHCOMP,
+             type = "histogram") #All Other Compensation ($)
+plot_ly(x = TDC2,
+             type = "histogram") #Total Compensation (Salary + Bonus + Other Annual + Restricted Stock Grants + LTIP Payouts + All Other + Value of Options Exercised).
+
+```
+
+## Histogram of other Variables using log to find significance 
+
+Normal Distribution
+
+```{r message=FALSE, warning=FALSE}
+plot_ly(x = log(CH),
+             type = "histogram")
+plot_ly(x = log(AT),
+             type = "histogram")
+plot_ly(x = log(NI),
+             type = "histogram")
+plot_ly(x = log(DLTT),
+             type = "histogram")
+plot_ly(x = log(PRCH_C),
+             type = "histogram")
+plot_ly(x = log(PRCL_C),
+             type = "histogram")
+plot_ly(x = log(SALARY),
+             type = "histogram")
+plot_ly(x = log(BONUS),
+             type = "histogram")
+plot_ly(x = log(OTHCOMP),
+             type = "histogram")
+plot_ly(x = log(TDC2),
+             type = "histogram")
+plot_ly(x = log(DRatio),
+             type = "histogram")
+```
+
+##Relationships between selected variables
+
+High to Low relationships
+-AT and DLTT, SALARY, BONUS
+-NI and TDC2, SALARY, BONUS
+-CH and SALARY, BONUS, TDC2
+-DLTT and SALARY
+-PRCH_C, PRCH_L and TDC2
+-SALARY and AGE
+
+
+
+```{r message=FALSE, warning=FALSE}
+par(mfrow=c(1,1))
+pairs.panels(dat1)
+
+```
+
+-No Significant Difference observed on Male only Data probably due to high number of observation 
+
+```{r message=FALSE, warning=FALSE}
+#observe male data only 
+pairs.panels(datm)
+
+```
+
+-AT and Bonus has a huge difference between Male .21 and female .60
+-DLTT and Bonus has a huge difference between Male .05 and female .56
+-TDC2 and CH has a small difference between Male .25 and female .36
+-NI and Stock price has difference between Male and female
+-All other relationships are high compared to Men Probably due to very low observations
+
+Does female Execs has to perform better then men in average? 
+Does firm have better with female Exec?
+
+```{r message=FALSE, warning=FALSE}
+#observe only  female data
+pairs.panels(datf)
+```
+
+```{r message=FALSE, warning=FALSE}
+#Getting Ideas about graphs
+dat1 %>%
+  select("AT", "NI", "CH","TDC2", "SALARY", "BONUS", "AGE", "GENDER") %>%
+ggpairs(dat1)
+```
+
+
+
+## Compbining Datset
+
+Added age group to my data
+
+```{rmessage=FALSE, warning=FALSE}
+
+hist(dat$AGE)
+```
+
+```{rmessage=FALSE, warning=FALSE}
+group_by(dat1, AGE)
+summarize(group_by(dat1, AGE), aSalary=mean(SALARY))
+```
+
+
+## Probability Stats
+
+Added age group to my data
+Review Probability
+
+
+```{r message=FALSE, warning=FALSE}
+#Review Probability
+htmlTable(as.data.frame(round(prop.table(xtabs(~ GENDER + ageg,  
+      data = dat1 %>%
+      mutate(AGE = AGE) %>% 
+      mutate(ageg = cut(AGE, 6))), 2), 2)),
+      caption = "Frequency of Price Difference",
+      header = paste(c("Brand", "Price Difference", "&dagger; Frequency")),
+      tfoot="&dagger; Data from Midterm Project")
+##added new variable ageg (AGE GROUP Based on this)
+
+```
+
+
+Female low probability
+
+```{r message=FALSE, warning=FALSE}
+(d <- as.data.frame(prop.table(xtabs(~ GENDER + ageg,  
+  data = dat1 %>%
+  mutate (ageg = cut(AGE, 6)) %>% # step 2
+  mutate (ageg = recode(ageg, "(0,30)" = "30 and under",
+                             "(31,45)" = "31-45",
+                             "(46,65)" = "46-65",
+                             "(66,100)" = "65+"))), 2)) %>%
+# 3 and 4. Visualize conditional probability of brand by price difference type
+  ggplot(aes(x = GENDER, y = Freq, fill = ageg)) +
+  geom_bar(stat="identity", position = "dodge", color = "black") +
+  geom_text(aes(label = round(Freq,2)), vjust=1.5, color = "white",
+            position = position_dodge(0.9), size = 4)+
+  ggtitle("Women are less likely to be Executives", sub = "Probabbility Grouped by Age")
+)
+
+```
+
+## EDA Graphs
+
+Middle age Men has highest number Bonus and Salary
+
+
+```{r message=FALSE, warning=FALSE}
+ggplot(dat, aes(x = AGE, y = BONUS, color = GENDER)) +
+  geom_point() +
+  ggtitle("Middle age men has highest number of bonus with outliers", sub = "Small number of Female observations")
+
+```
+
+Over-all Observation
+
+```{r message=FALSE, warning=FALSE}
+grid.arrange(
+ggplot(dat, aes(x = AGE, y = SALARY, color = GENDER)) +
+  geom_point() +
+  stat_density2d() +
+  ggtitle("Mostly Middle aged Men", sub = "Small number of Female observations"),
+ggplot(dat, aes(x = AGE, y = SALARY, color = GENDER)) +
+  geom_point() +
+  stat_density2d(aes(fill =..density..), geom = "raster", contour = FALSE) +
+  ggtitle("Mostly Middle aged Men", sub = "Heat map, light color indicates more observations"),
+ncol = 2
+)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+grid.arrange(
+dat %>%
+  group_by(GENDER) %>%
+  summarise(age_mean = mean(AGE)) %>%
+  ggplot(aes(x = GENDER, y = age_mean, fill = GENDER)) +
+    geom_bar(stat="identity") +
+    coord_flip(), 
+dat %>%
+  ggplot(aes(x = GENDER, y = AGE, fill = GENDER)) +
+    geom_boxplot() +
+    coord_flip() +
+    guides(fill = FALSE, ylab = FALSE),
+ncol = 2
+)
+
+```
+
+##Female Compensation in average 
+=========================================
+As female age they get higher compensation
+
+
+```{r message=FALSE, warning=FALSE}
+datf %>%
+  group_by(ageg) %>%
+  summarise(Avg_Com = mean(TDC2)) %>%
+  ggplot(aes(x = ageg, y = Avg_Com, )) +
+  geom_bar(stat="identity", position = "dodge", color = "black") +
+  labs(fill = "Gender") +
+# Add and improve titles and labels
+    ggtitle("In Average as female age there Compensation gets Larger") + 
+    ylab("Average Compensation by Thousands") +
+    xlab("Age Group") +
+    scale_x_discrete(labels=c("Under 40", "40 to 51", "51 to 62", "62 to 73", "73 to 84", "84 +", "NA")) +
+ theme_classic() + 
+  theme(axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),)
+```
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+datm %>%
+  group_by(ageg) %>%
+  summarise(Avg_Com = mean(TDC2)) %>%
+  ggplot(aes(x = ageg, y = Avg_Com, )) +
+  geom_bar(stat="identity", position = "dodge", color = "black") +
+  labs(fill = "Gender") +
+# Add and improve titles and labels
+    ggtitle("In Average as female age there Compensation gets Larger") + 
+    ylab("Average Compensation by Thousands") +
+    xlab("Age Group") +
+    scale_x_discrete(labels=c("Under 40", "40 to 51", "51 to 62", "62 to 73", "73 to 84", "84 +", "NA")) +
+ theme_classic() + 
+  theme(axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),)
+  
+```
+
+
+```{r message=FALSE, warning=FALSE}
+dat1 %>%
+  group_by( GENDER ) %>%
+  summarise( count = n(),
+              proportion = sum(count) / nrow(dat1),
+              percent = proportion * 100)
+
+dat1 %>%
+  group_by( AGE ) %>%
+  ggplot() +
+    geom_bar(aes(x = GENDER)) +
+    ggtitle("Middle Age")
+
+```
+
+##Avearage Compensation by Gender
+=========================================
+Lets compare Total Compensation side by side   
+
++ We can see that: 
+    - There are no Female Executive over 84
+    - Female age group has a big compensation jump from 62-73 to 73-84 
+
+```{r message=FALSE, warning=FALSE}
+# Average profit by region and category 
+dat1 %>%
+  group_by(ageg, GENDER) %>%
+  summarise(Avg_Com = mean(TDC2)) %>%
+  ggplot(aes(x = ageg, y = Avg_Com, fill = reorder(GENDER, desc(Avg_Com)))) +
+  geom_bar(stat="identity", position = "dodge", color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  labs(fill = "Gender") +
+# Add and improve titles and labels
+    ggtitle("Middle age female age groups has a big compensation jump") + 
+    ylab("Average Compensation by Thousands") +
+    xlab("Age Group") +
+    scale_x_discrete(labels=c("Under 40", "40 to 51", "51 to 62", "62 to 73", "73 to 84", "84 +", "NA")) +
+ theme_classic() + 
+  theme(axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),)
+  
+```
+
+##Multiple Regression Analysis
+Testing Different Models for Significance Analysis
+
+1. Most statistically significant  
+2. Have the largest impact  
+
+Visualize which variables have coefficients statistically different from zero  
+
+
+```{r message=FALSE, warning=FALSE}
+attach(dat1)
+# ANOVA
+baseMod <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C)
+mod1 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI)
+mod2 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT)
+mod3 <- lm(TDC2 ~ AGE + BONUS + AT + CH)
+mod4 <- lm(TDC2 ~ AGE + BONUS + AT)
+anova(baseMod, mod1, mod2, mod3, mod4)
+summary(baseMod)
+```
+
+```{r message=FALSE, warning=FALSE}
+attach(datm)
+# ANOVA
+baseMod <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C)
+mod1 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI)
+mod2 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT)
+mod3 <- lm(TDC2 ~ AGE + BONUS + AT + CH)
+mod4 <- lm(TDC2 ~ AGE + BONUS + AT)
+anova(baseMod, mod1, mod2, mod3, mod4)
+summary(baseMod)
+```
+
+```{r message=FALSE, warning=FALSE}
+attach(datf)
+# ANOVA
+baseMod <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C)
+mod1 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI)
+mod2 <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT)
+mod3 <- lm(TDC2 ~ AGE + BONUS + AT + CH)
+mod4 <- lm(TDC2 ~ AGE + BONUS + AT)
+anova(baseMod, mod1, mod2, mod3, mod4)
+summary(baseMod)
+```
+
+##Visualization of Data Regression 
+=========================================
+
+Age Groups Has most Confident Interval Variance  
+
+
+```{r message=FALSE, warning=FALSE}
+attach(dat1)
+mod <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C+ OTHCOMP+ ageg)
+coe <- summary(mod)$coefficients # get coefficients and related stats
+coe_CI <- as.data.frame(cbind(coe[-1, ], confint(mod)[-1, ])) # find and bind CI, remove Int 
+
+# Rename results data frame
+names(coe_CI) <- c("estimate", "se", "t", "pval","low_CI","high_CI") 
+
+htmlTable(round(coe_CI[order(coe_CI$pval, decreasing=FALSE),],3))
+
+(g1 <- ggplot(coe_CI, aes(x = estimate, y = reorder(row.names(coe_CI),desc(pval)))) +
+  geom_point(size = 3) +
+  xlim(min(coe_CI$low_CI), max(coe_CI$high_CI)) +
+  ylab("Variable") +
+  xlab("Coefficient") +
+  theme_bw() +
+  ggtitle("ALL Data: Age group has different confident intervals") +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(pval))), 
+               xend = coe_CI$high_CI) +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(coe_CI$pval))), 
+               xend = coe_CI$low_CI) +
+   xlab("Coefficient with Confidence Interval") +
+   geom_vline(xintercept = 0, color = "red")
+)
+
+```
+
+MALE ONLY
+
+```{r message=FALSE, warning=FALSE}
+attach(datm) #Only Male Data
+mod <- lm(TDC2 ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C+ OTHCOMP+ ageg)
+coe <- summary(mod)$coefficients # get coefficients and related stats
+coe_CI <- as.data.frame(cbind(coe[-1, ], confint(mod)[-1, ])) # find and bind CI, remove Int 
+
+# Rename results data frame
+names(coe_CI) <- c("estimate", "se", "t", "pval","low_CI","high_CI") 
+
+htmlTable(round(coe_CI[order(coe_CI$pval, decreasing=FALSE),],3))
+
+(g1 <- ggplot(coe_CI, aes(x = estimate, y = reorder(row.names(coe_CI),desc(pval)))) +
+  geom_point(size = 3) +
+  xlim(min(coe_CI$low_CI), max(coe_CI$high_CI)) +
+  ylab("Variable") +
+  xlab("Coefficient") +
+  theme_bw() +
+  ggtitle("Male only: Age group has different confident intervals") +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(pval))), 
+               xend = coe_CI$high_CI) +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(coe_CI$pval))), 
+               xend = coe_CI$low_CI) +
+   xlab("Coefficient with Confidence Interval") +
+   geom_vline(xintercept = 0, color = "red")
+)
+
+```
+
+FEMALE ONLY: USING LOG
+
+```{r message=FALSE, warning=FALSE}
+attach(datf) #Only Female Data
+mod <- lm(log(TDC2) ~ AGE + BONUS + AT + CH + DLTT + NI + PRCH_C + PRCL_C+ OTHCOMP+ ageg)
+coe <- summary(mod)$coefficients # get coefficients and related stats
+coe_CI <- as.data.frame(cbind(coe[-1, ], confint(mod)[-1, ])) # find and bind CI, remove Int 
+
+# Rename results data frame
+names(coe_CI) <- c("estimate", "se", "t", "pval","low_CI","high_CI") 
+
+htmlTable(round(coe_CI[order(coe_CI$pval, decreasing=FALSE),],3))
+
+(g1 <- ggplot(coe_CI, aes(x = estimate, y = reorder(row.names(coe_CI),desc(pval)))) +
+  geom_point(size = 3) +
+  xlim(min(coe_CI$low_CI), max(coe_CI$high_CI)) +
+  ylab("Variable") +
+  xlab("Coefficient") +
+  theme_bw() +
+  ggtitle("Female only: Age group has different confident intervals") +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(pval))), 
+               xend = coe_CI$high_CI) +
+  geom_segment(aes(yend = reorder(row.names(coe_CI),desc(coe_CI$pval))), 
+               xend = coe_CI$low_CI) +
+   xlab("Coefficient with Confidence Interval") +
+   geom_vline(xintercept = 0, color = "red")
+)
+
+```
+
+
+##Chow test
+
+```{r message=FALSE, warning=FALSE}
+#== Chow test
+chow.test <- local({
+  m <- 2    # number of restrictions (delta_0 = delta_1 = 0)
+  n <- dim(dat1)[1]
+  full.1 <- lm( TDC2 ~ AGE, data=subset(dat, GENDER == "FEMALE"))  # female regression
+  full.2 <- lm( TDC2 ~ AGE, data=subset(dat, GENDER == "MALE"))    # male regression
+  full <- lm(TDC2 ~ AGE + GENDER + GENDER*AGE, data=dat)          # full model using dumies
+  rest <- lm(TDC2 ~ AGE + AGE, data=dat)                          # restricted model
+  SSE.1 <- sum( resid(full.1)^2 )
+  SSE.2 <- sum( resid(full.2)^2 )
+  SSE.full <- sum( resid(full)^2 )
+  all.equal(SSE.full, SSE.1 + SSE.2)
+  SSE.rm <- sum( resid(rest)^2 )
+  chow <- (( SSE.rm - (SSE.1 + SSE.2)) / m ) / ( (SSE.1 + SSE.2) / (n - 2*m) )
+  pval.chow <- 1 - pf(chow, m, n-2*m)
+  out <- list(SSE.1=SSE.1, SSE.2=SSE.2, SSE.rm=SSE.rm, chow=chow, pval.chow=pval.chow)
+  return(out)
+})
+sapply(chow.test, cbind)
+```
+
+```{r eval=FALSE, include=FALSE}
+#log working in progress. Courrently not working
+attach(dat1)
+na.action="na.omit"
+#dat1[dat1 == "0"] <- 0.01
+TDC2[which(is.nan(TDC2))] = 0.01
+TDC2[which(is.na(TDC2))] = 0.01
+TDC2[which(TDC2==Inf)] = 0.01
+# ANOVA
+baseMod <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT) + log(CH) + log(DLTT) + log(NI) + log(PRCH_C) + log(PRCL_C))
+mod1 <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT) + log(CH) + log(DLTT) + log(NI))
+mod2 <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT) + log(CH) + log(NI))
+mod3 <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT) + log(CH) + log(DLTT))
+mod4 <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT) + log(CH))
+mod5 <- lm(log(TDC2) ~ AGE + log(BONUS) + log(AT))
+anova(baseMod, mod1, mod2, mod3, mod4, mod5)
+
+##na.action=na.exclude,data=dat
+```
+
+
