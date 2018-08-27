@@ -297,7 +297,7 @@ ncol = 2
 ```
 
 ##Female Compensation in average 
-=========================================
+
 As female age they get higher compensation
 
 
@@ -356,7 +356,7 @@ dat1 %>%
 ```
 
 ##Avearage Compensation by Gender
-=========================================
+
 Lets compare Total Compensation side by side   
 
 + We can see that: 
@@ -429,7 +429,6 @@ summary(baseMod)
 ```
 
 ##Visualization of Data Regression 
-=========================================
 
 Age Groups Has most Confident Interval Variance  
 
