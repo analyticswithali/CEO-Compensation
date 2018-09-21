@@ -1,11 +1,13 @@
 ---
 title: "CEO Compensation Regression EDA"
 author: "Afsar Ali"
-output: 
-  html_document:
+output:
+  prettydoc::html_pretty:
+    theme: Cayman
+    highlight: github
     df_print: paged
-    toc: true
-    toc_depth: 3
+    toc: yes
+    toc_depth: '4'
 ---
 
 ## Code header 

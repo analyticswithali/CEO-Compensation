@@ -2,14 +2,12 @@
 title: "CEO Compensation EDA"
 author: "Afsar Ali"
 output:
-  html_document:
+  prettydoc::html_pretty:
+    theme: Cayman
+    highlight: github
     df_print: paged
     toc: yes
-    toc_depth: '3'
-  html_notebook:
-    df_print: paged
-    toc: yes
-    toc_depth: '3'
+    toc_depth: '4'
 ---
 
 ```{r echo=TRUE}
@@ -164,9 +162,6 @@ Let's compare total compensation side by side
 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-sink("/dev/null")
-
-
 # Average profit by region and category 
 dat1 %>%
   group_by(ageg, GENDER) %>%
@@ -185,8 +180,6 @@ dat1 %>%
   theme(axis.ticks.x = element_blank(),
         axis.ticks.y = element_blank(),)
 
-sink(); 
-  
 ```
 
 ###Older females observed to have significantly higher bonus 
